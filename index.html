@@ -22,6 +22,7 @@ body{font-family:system-ui,sans-serif;background:#f5f5f3;color:#1a1a1a;min-heigh
 .metric-value{font-size:20px;font-weight:500}
 .metric-value.green{color:#0F6E56}
 .metric-value.amber{color:#854F0B}
+.metric-value.zero{color:#888}
 label{font-size:13px;color:#666;display:block;margin-bottom:4px}
 input,select,textarea{width:100%;padding:7px 10px;border:0.5px solid #ccc;border-radius:8px;background:#fff;color:#1a1a1a;font-size:13px;margin-bottom:10px}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -29,6 +30,7 @@ input,select,textarea{width:100%;padding:7px 10px;border:0.5px solid #ccc;border
 .btn{padding:7px 16px;border:0.5px solid #ccc;border-radius:8px;background:#fff;color:#1a1a1a;cursor:pointer;font-size:13px}
 .btn-primary{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
 .btn-danger{color:#A32D2D;border-color:#A32D2D}
+.btn-green{background:#0F6E56;color:#fff;border-color:#0F6E56}
 table{width:100%;border-collapse:collapse;font-size:13px}
 th{text-align:left;padding:8px 10px;border-bottom:0.5px solid #e0e0e0;color:#888;font-weight:500}
 td{padding:8px 10px;border-bottom:0.5px solid #e0e0e0}
@@ -38,6 +40,8 @@ td{padding:8px 10px;border-bottom:0.5px solid #e0e0e0}
 .badge-amber{background:#FAEEDA;color:#633806}
 .badge-gray{background:#F1EFE8;color:#444441}
 .badge-coral{background:#FAECE7;color:#712B13}
+.badge-purple{background:#EEEDFE;color:#3C3489}
+.badge-red{background:#FCEBEB;color:#791F1F}
 .section-title{font-size:14px;font-weight:500;margin-bottom:12px}
 .empty{text-align:center;padding:2rem;color:#aaa;font-size:13px}
 .foto-preview{width:60px;height:44px;object-fit:cover;border-radius:4px;border:0.5px solid #e0e0e0}
@@ -47,6 +51,8 @@ td{padding:8px 10px;border-bottom:0.5px solid #e0e0e0}
 .toast{position:fixed;bottom:1.5rem;right:1.5rem;background:#1a1a1a;color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:999}
 .toast.show{opacity:1}
 .loading{text-align:center;padding:2rem;color:#aaa;font-size:13px}
+.liquidacion-box{background:#E1F5EE;border:0.5px solid #1D9E75;border-radius:8px;padding:1rem;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center}
+.liquidacion-box.zero{background:#f5f5f3;border-color:#ccc}
 </style>
 </head>
 <body>
@@ -69,6 +75,8 @@ td{padding:8px 10px;border-bottom:0.5px solid #e0e0e0}
     <div class="filter-bar">
       <label>Mes:</label>
       <select id="filtro-mes" onchange="renderDashboard()"><option value="">Todos</option></select>
+      <label>Dueño:</label>
+      <select id="filtro-dueno-dash" onchange="renderDashboard()"><option value="">Todos</option></select>
     </div>
     <div class="metric-grid" id="metrics"></div>
     <div class="card">
@@ -127,6 +135,7 @@ td{padding:8px 10px;border-bottom:0.5px solid #e0e0e0}
             <option value="pasajes">Pasajes</option>
             <option value="estacionamiento">Estacionamiento</option>
             <option value="lavado">Lavado</option>
+            <option value="mecanico">Mecánico</option>
             <option value="otros">Otros</option>
           </select>
         </div>
@@ -143,6 +152,7 @@ td{padding:8px 10px;border-bottom:0.5px solid #e0e0e0}
       <div class="section-title">Historial de gastos</div>
       <div class="filter-bar">
         <label>Auto:</label><select id="filtro-auto-gastos" onchange="renderGastos()"><option value="">Todos</option></select>
+        <label>Dueño:</label><select id="filtro-dueno-gastos" onchange="renderGastos()"><option value="">Todos</option></select>
         <label>Mes:</label><select id="filtro-mes-gastos" onchange="renderGastos()"><option value="">Todos</option></select>
       </div>
       <div id="lista-gastos"><div class="loading">Cargando...</div></div>
@@ -154,10 +164,15 @@ td{padding:8px 10px;border-bottom:0.5px solid #e0e0e0}
     <div class="filter-bar">
       <label>Mes:</label><select id="filtro-mes-com" onchange="renderComisiones()"><option value="">Todos</option></select>
     </div>
+    <div id="liquidacion-status"></div>
     <div class="metric-grid" id="metrics-com"></div>
     <div class="card">
       <div class="section-title">Detalle por arriendo</div>
       <div id="tabla-comisiones"></div>
+    </div>
+    <div class="card">
+      <div class="section-title">Historial de liquidaciones</div>
+      <div id="tabla-liquidaciones"></div>
     </div>
   </div>
 </div>
@@ -170,27 +185,24 @@ const SUPA_URL='https://dpbkiuvrtqbnykzpqxoh.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRwYmtpdXZydHFibnlrenBxeG9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3MTk5ODEsImV4cCI6MjA5MjI5NTk4MX0.D6h4RwYnkuNR4X8O9orcbsiwx99y_oCYNdqf4S3eC9k';
 const sb=supabase.createClient(SUPA_URL,SUPA_KEY);
 
-let autos=[],arriendos=[],gastos=[],chartInstance=null;
+let autos=[],arriendos=[],gastos=[],liquidaciones=[],chartInstance=null;
 
-function toast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2500);
-}
-
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
 function clp(n){return '$'+Math.round(n).toLocaleString('es-CL');}
 function diasCalc(i,f){const d=Math.round((new Date(f)-new Date(i))/(864e5));return d<1?1:d;}
 function duenoDe(p){const a=autos.find(x=>x.patente===p);return a?a.dueno:'-';}
 function patenteBadge(p){return`<span class="badge badge-blue">${p||'-'}</span>`;}
-function catBadge(c){const m={bencina:'badge-amber',pasajes:'badge-blue',estacionamiento:'badge-gray',lavado:'badge-teal',otros:'badge-coral'};return`<span class="badge ${m[c]||'badge-gray'}">${c}</span>`;}
+function catBadge(c){const m={bencina:'badge-amber',pasajes:'badge-blue',estacionamiento:'badge-gray',lavado:'badge-teal',mecanico:'badge-red',otros:'badge-coral'};return`<span class="badge ${m[c]||'badge-gray'}">${c}</span>`;}
+function duenos(){return [...new Set(autos.map(a=>a.dueno))].sort();}
 
 async function loadAll(){
-  const [ra,rr,rg]=await Promise.all([
+  const[ra,rr,rg,rl]=await Promise.all([
     sb.from('autos').select('*').order('created_at'),
     sb.from('arriendos').select('*').order('inicio',{ascending:false}),
-    sb.from('gastos').select('*').order('fecha',{ascending:false})
+    sb.from('gastos').select('*').order('fecha',{ascending:false}),
+    sb.from('liquidaciones').select('*').order('fecha',{ascending:false})
   ]);
-  autos=ra.data||[];arriendos=rr.data||[];gastos=rg.data||[];
+  autos=ra.data||[];arriendos=rr.data||[];gastos=rg.data||[];liquidaciones=rl.data||[];
   populateSelects();populateMeses();renderAll();
 }
 
@@ -200,6 +212,12 @@ function populateSelects(){
     const cur=sel.value;
     sel.innerHTML=id==='filtro-auto-gastos'?'<option value="">Todos</option>':'<option value="">Seleccionar</option>';
     autos.forEach(a=>sel.innerHTML+=`<option value="${a.patente}" ${a.patente===cur?'selected':''}>${a.patente} — ${a.dueno}</option>`);
+  });
+  ['filtro-dueno-dash','filtro-dueno-gastos'].forEach(id=>{
+    const sel=document.getElementById(id);if(!sel)return;
+    const cur=sel.value;
+    sel.innerHTML='<option value="">Todos</option>';
+    duenos().forEach(d=>sel.innerHTML+=`<option value="${d}" ${d===cur?'selected':''}>${d}</option>`);
   });
 }
 
@@ -223,13 +241,13 @@ function populateMeses(){
   });
 }
 
-function filtrarMes(arr,mes,campo='fecha'){
-  return mes?arr.filter(x=>(x[campo]||'').startsWith(mes)):arr;
+function filtrarMes(arr,mes,campo='fecha'){return mes?arr.filter(x=>(x[campo]||'').startsWith(mes)):arr;}
+function filtrarDueno(arr,dueno){
+  if(!dueno)return arr;
+  return arr.filter(x=>duenoDe(x.patente)===dueno);
 }
 
-function renderAll(){
-  renderListaAutos();renderArriendos();renderGastos();renderDashboard();renderComisiones();
-}
+function renderAll(){renderListaAutos();renderArriendos();renderGastos();renderDashboard();renderComisiones();}
 
 async function agregarAuto(){
   const p=document.getElementById('nuevo-patente').value.trim().toUpperCase();
@@ -299,9 +317,7 @@ async function agregarGasto(){
   if(!p||!cat||!monto||!fecha){alert('Completa los campos obligatorios');return;}
   let foto=null;
   if(fotoInput.files[0]){
-    foto=await new Promise(res=>{
-      const r=new FileReader();r.onload=e=>res(e.target.result);r.readAsDataURL(fotoInput.files[0]);
-    });
+    foto=await new Promise(res=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.readAsDataURL(fotoInput.files[0]);});
   }
   const{error}=await sb.from('gastos').insert({patente:p,cat,monto,fecha,descripcion:desc||'—',foto});
   if(error){alert('Error: '+error.message);return;}
@@ -320,14 +336,16 @@ async function eliminarGasto(id){
 function renderGastos(){
   const el=document.getElementById('lista-gastos');
   const autoF=document.getElementById('filtro-auto-gastos').value;
+  const duenoF=document.getElementById('filtro-dueno-gastos').value;
   const mesF=document.getElementById('filtro-mes-gastos').value;
   let data=[...gastos];
   if(autoF)data=data.filter(x=>x.patente===autoF);
+  if(duenoF)data=filtrarDueno(data,duenoF);
   if(mesF)data=data.filter(x=>x.fecha.startsWith(mesF));
   if(!data.length){el.innerHTML='<div class="empty">Sin gastos registrados</div>';return;}
-  el.innerHTML=`<table><thead><tr><th>Fecha</th><th>Patente</th><th>Categoría</th><th>Monto</th><th>Descripción</th><th>Foto</th><th></th></tr></thead><tbody>`+
+  el.innerHTML=`<table><thead><tr><th>Fecha</th><th>Patente</th><th>Dueño</th><th>Categoría</th><th>Monto</th><th>Descripción</th><th>Foto</th><th></th></tr></thead><tbody>`+
   data.map(g=>`<tr>
-    <td>${g.fecha}</td><td>${patenteBadge(g.patente)}</td><td>${catBadge(g.cat)}</td>
+    <td>${g.fecha}</td><td>${patenteBadge(g.patente)}</td><td>${duenoDe(g.patente)}</td><td>${catBadge(g.cat)}</td>
     <td style="font-weight:500">${clp(g.monto)}</td>
     <td style="color:#888">${g.descripcion}</td>
     <td>${g.foto?`<img src="${g.foto}" class="foto-preview" alt="comprobante">`:'—'}</td>
@@ -337,8 +355,10 @@ function renderGastos(){
 
 function renderDashboard(){
   const mes=document.getElementById('filtro-mes').value;
-  const gf=filtrarMes(gastos,mes);
-  const af=filtrarMes(arriendos,mes,'inicio');
+  const dueno=document.getElementById('filtro-dueno-dash').value;
+  let gf=filtrarMes(gastos,mes);
+  let af=filtrarMes(arriendos,mes,'inicio');
+  if(dueno){gf=filtrarDueno(gf,dueno);af=filtrarDueno(af,dueno);}
   const tGastos=gf.reduce((s,g)=>s+g.monto,0);
   const tDias=af.reduce((s,r)=>s+r.dias,0);
   const tCom=tDias*5000;
@@ -348,8 +368,8 @@ function renderDashboard(){
     <div class="metric"><div class="metric-label">Comisiones Viviana</div><div class="metric-value green">${clp(tCom)}</div></div>
     <div class="metric"><div class="metric-label">Total a pagar Viviana</div><div class="metric-value amber">${clp(tGastos+tCom)}</div></div>
   `;
-  const cats=['bencina','pasajes','estacionamiento','lavado','otros'];
-  const colores=['#BA7517','#378ADD','#888780','#1D9E75','#D85A30'];
+  const cats=['bencina','pasajes','estacionamiento','lavado','mecanico','otros'];
+  const colores=['#BA7517','#378ADD','#888780','#1D9E75','#E24B4A','#D85A30'];
   const totCat=cats.map(c=>gf.filter(g=>g.cat===c).reduce((s,g)=>s+g.monto,0));
   if(chartInstance)chartInstance.destroy();
   chartInstance=new Chart(document.getElementById('myChart'),{
@@ -369,6 +389,14 @@ function renderDashboard(){
   rows.map(([p,d])=>`<tr><td>${patenteBadge(p)}</td><td>${d.dueno}</td><td style="font-weight:500">${clp(d.total)}</td></tr>`).join('')+'</tbody></table>';
 }
 
+async function registrarLiquidacion(total){
+  if(!confirm('¿Confirmar pago a Viviana de '+clp(total)+'? Esto dejará el saldo en cero.'))return;
+  const fecha=new Date().toISOString().split('T')[0];
+  const{error}=await sb.from('liquidaciones').insert({monto:total,fecha,nota:'Liquidación registrada'});
+  if(error){alert('Error: '+error.message);return;}
+  toast('Liquidación registrada — '+clp(total));await loadAll();
+}
+
 function renderComisiones(){
   const mes=document.getElementById('filtro-mes-com').value;
   const af=filtrarMes(arriendos,mes,'inicio');
@@ -376,22 +404,39 @@ function renderComisiones(){
   const tDias=af.reduce((s,r)=>s+r.dias,0);
   const tCom=tDias*5000;
   const tGastos=gf.reduce((s,g)=>s+g.monto,0);
+  const totalDeuda=tCom+tGastos;
+
+  const liqMes=filtrarMes(liquidaciones,mes);
+  const totalPagado=liqMes.reduce((s,l)=>s+l.monto,0);
+  const saldo=totalDeuda-totalPagado;
+
+  const statusEl=document.getElementById('liquidacion-status');
+  if(saldo<=0){
+    statusEl.innerHTML=`<div class="liquidacion-box zero"><div><div style="font-weight:500;color:#888">Viviana al día</div><div style="font-size:12px;color:#aaa">Sin deuda pendiente en este período</div></div></div>`;
+  }else{
+    statusEl.innerHTML=`<div class="liquidacion-box"><div><div style="font-weight:500;color:#0F6E56">Saldo pendiente a Viviana</div><div style="font-size:20px;font-weight:500;color:#0F6E56">${clp(saldo)}</div></div><button class="btn btn-green" onclick="registrarLiquidacion(${saldo})">Registrar pago</button></div>`;
+  }
+
   document.getElementById('metrics-com').innerHTML=`
     <div class="metric"><div class="metric-label">Arriendos</div><div class="metric-value">${af.length}</div></div>
     <div class="metric"><div class="metric-label">Total días</div><div class="metric-value">${tDias}</div></div>
     <div class="metric"><div class="metric-label">Comisión días</div><div class="metric-value green">${clp(tCom)}</div></div>
-    <div class="metric"><div class="metric-label">Gastos registrados</div><div class="metric-value">${clp(tGastos)}</div></div>
-    <div class="metric"><div class="metric-label">Total a pagar Viviana</div><div class="metric-value amber">${clp(tCom+tGastos)}</div></div>
+    <div class="metric"><div class="metric-label">Gastos período</div><div class="metric-value">${clp(tGastos)}</div></div>
+    <div class="metric"><div class="metric-label">Total generado</div><div class="metric-value amber">${clp(totalDeuda)}</div></div>
+    <div class="metric"><div class="metric-label">Ya pagado</div><div class="metric-value green">${clp(totalPagado)}</div></div>
   `;
+
   const el=document.getElementById('tabla-comisiones');
-  if(!af.length){el.innerHTML='<div class="empty">Sin arriendos registrados</div>';return;}
-  el.innerHTML=`<table><thead><tr><th>Patente</th><th>Dueño</th><th>Inicio</th><th>Término</th><th>Días</th><th>Cliente</th><th>Comisión</th></tr></thead><tbody>`+
-  af.map(r=>`<tr>
-    <td>${patenteBadge(r.patente)}</td><td>${duenoDe(r.patente)}</td>
-    <td>${r.inicio}</td><td>${r.termino}</td>
-    <td style="text-align:center">${r.dias}</td><td>${r.cliente}</td>
-    <td style="font-weight:500;color:#0F6E56">${clp(r.dias*5000)}</td>
-  </tr>`).join('')+'</tbody></table>';
+  if(!af.length){el.innerHTML='<div class="empty">Sin arriendos registrados</div>';}
+  else{
+    el.innerHTML=`<table><thead><tr><th>Patente</th><th>Dueño</th><th>Inicio</th><th>Término</th><th>Días</th><th>Cliente</th><th>Comisión</th></tr></thead><tbody>`+
+    af.map(r=>`<tr><td>${patenteBadge(r.patente)}</td><td>${duenoDe(r.patente)}</td><td>${r.inicio}</td><td>${r.termino}</td><td style="text-align:center">${r.dias}</td><td>${r.cliente}</td><td style="font-weight:500;color:#0F6E56">${clp(r.dias*5000)}</td></tr>`).join('')+'</tbody></table>';
+  }
+
+  const liqEl=document.getElementById('tabla-liquidaciones');
+  if(!liquidaciones.length){liqEl.innerHTML='<div class="empty">Sin liquidaciones registradas</div>';return;}
+  liqEl.innerHTML=`<table><thead><tr><th>Fecha</th><th>Monto pagado</th><th>Nota</th></tr></thead><tbody>`+
+  liquidaciones.map(l=>`<tr><td>${l.fecha}</td><td style="font-weight:500;color:#0F6E56">${clp(l.monto)}</td><td style="color:#888">${l.nota||'—'}</td></tr>`).join('')+'</tbody></table>';
 }
 
 function showTab(t){
