@@ -16,15 +16,14 @@ body{font-family:system-ui,sans-serif;background:#f5f5f3;color:#1a1a1a;min-heigh
 .nav button{padding:6px 14px;font-size:13px;border-radius:8px;border:0.5px solid #ccc;background:#fff;color:#666;cursor:pointer}
 .nav button.active{background:#f0eeea;color:#1a1a1a;border-color:#aaa;font-weight:500}
 .card{background:#fff;border:0.5px solid #e0e0e0;border-radius:12px;padding:1rem 1.25rem;margin-bottom:1rem}
-.metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:1rem}
-.metric{background:#f5f5f3;border-radius:8px;padding:1rem}
-.metric-label{font-size:12px;color:#888;margin-bottom:4px}
-.metric-value{font-size:20px;font-weight:500}
+.metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:1rem}
+.metric{background:#f5f5f3;border-radius:8px;padding:0.75rem}
+.metric-label{font-size:11px;color:#888;margin-bottom:4px}
+.metric-value{font-size:18px;font-weight:500}
 .metric-value.green{color:#0F6E56}
 .metric-value.amber{color:#854F0B}
-.metric-value.zero{color:#888}
 label{font-size:13px;color:#666;display:block;margin-bottom:4px}
-input,select,textarea{width:100%;padding:7px 10px;border:0.5px solid #ccc;border-radius:8px;background:#fff;color:#1a1a1a;font-size:13px;margin-bottom:10px}
+input,select{width:100%;padding:7px 10px;border:0.5px solid #ccc;border-radius:8px;background:#fff;color:#1a1a1a;font-size:13px;margin-bottom:10px}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
 .btn{padding:7px 16px;border:0.5px solid #ccc;border-radius:8px;background:#fff;color:#1a1a1a;cursor:pointer;font-size:13px}
@@ -40,19 +39,19 @@ td{padding:8px 10px;border-bottom:0.5px solid #e0e0e0}
 .badge-amber{background:#FAEEDA;color:#633806}
 .badge-gray{background:#F1EFE8;color:#444441}
 .badge-coral{background:#FAECE7;color:#712B13}
-.badge-purple{background:#EEEDFE;color:#3C3489}
 .badge-red{background:#FCEBEB;color:#791F1F}
 .section-title{font-size:14px;font-weight:500;margin-bottom:12px}
-.empty{text-align:center;padding:2rem;color:#aaa;font-size:13px}
+.dueno-title{font-size:13px;font-weight:500;color:#444;margin:1rem 0 6px;padding-bottom:4px;border-bottom:0.5px solid #e0e0e0}
+.empty{text-align:center;padding:1.5rem;color:#aaa;font-size:13px}
 .foto-preview{width:60px;height:44px;object-fit:cover;border-radius:4px;border:0.5px solid #e0e0e0}
 .filter-bar{display:flex;gap:8px;align-items:center;margin-bottom:1rem;flex-wrap:wrap}
 .filter-bar label{margin:0;white-space:nowrap}
-.filter-bar select,.filter-bar input{margin:0;width:auto}
+.filter-bar select{margin:0;width:auto}
 .toast{position:fixed;bottom:1.5rem;right:1.5rem;background:#1a1a1a;color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:999}
 .toast.show{opacity:1}
 .loading{text-align:center;padding:2rem;color:#aaa;font-size:13px}
-.liquidacion-box{background:#E1F5EE;border:0.5px solid #1D9E75;border-radius:8px;padding:1rem;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center}
-.liquidacion-box.zero{background:#f5f5f3;border-color:#ccc}
+.liq-box{background:#E1F5EE;border:0.5px solid #1D9E75;border-radius:8px;padding:1rem;margin-bottom:0.75rem;display:flex;justify-content:space-between;align-items:center}
+.liq-box.zero{background:#f5f5f3;border-color:#ccc}
 </style>
 </head>
 <body>
@@ -61,7 +60,6 @@ td{padding:8px 10px;border-bottom:0.5px solid #e0e0e0}
     <div class="topbar-title">Loki Rent a Car</div>
     <div class="topbar-date" id="fecha-hoy"></div>
   </div>
-
   <div class="nav">
     <button class="active" onclick="showTab('dashboard')">Dashboard</button>
     <button onclick="showTab('autos')">Autos</button>
@@ -70,13 +68,10 @@ td{padding:8px 10px;border-bottom:0.5px solid #e0e0e0}
     <button onclick="showTab('comisiones')">Comisiones Viviana</button>
   </div>
 
-  <!-- DASHBOARD -->
   <div id="tab-dashboard">
     <div class="filter-bar">
-      <label>Mes:</label>
-      <select id="filtro-mes" onchange="renderDashboard()"><option value="">Todos</option></select>
-      <label>Dueño:</label>
-      <select id="filtro-dueno-dash" onchange="renderDashboard()"><option value="">Todos</option></select>
+      <label>Mes:</label><select id="filtro-mes" onchange="renderDashboard()"><option value="">Todos</option></select>
+      <label>Dueño:</label><select id="filtro-dueno-dash" onchange="renderDashboard()"><option value="">Todos</option></select>
     </div>
     <div class="metric-grid" id="metrics"></div>
     <div class="card">
@@ -89,7 +84,6 @@ td{padding:8px 10px;border-bottom:0.5px solid #e0e0e0}
     </div>
   </div>
 
-  <!-- AUTOS -->
   <div id="tab-autos" style="display:none">
     <div class="card">
       <div class="section-title">Agregar auto</div>
@@ -105,7 +99,6 @@ td{padding:8px 10px;border-bottom:0.5px solid #e0e0e0}
     </div>
   </div>
 
-  <!-- ARRIENDOS -->
   <div id="tab-arriendos" style="display:none">
     <div class="card">
       <div class="section-title">Registrar arriendo</div>
@@ -123,7 +116,6 @@ td{padding:8px 10px;border-bottom:0.5px solid #e0e0e0}
     </div>
   </div>
 
-  <!-- GASTOS -->
   <div id="tab-gastos" style="display:none">
     <div class="card">
       <div class="section-title">Registrar gasto</div>
@@ -159,13 +151,12 @@ td{padding:8px 10px;border-bottom:0.5px solid #e0e0e0}
     </div>
   </div>
 
-  <!-- COMISIONES -->
   <div id="tab-comisiones" style="display:none">
     <div class="filter-bar">
       <label>Mes:</label><select id="filtro-mes-com" onchange="renderComisiones()"><option value="">Todos</option></select>
     </div>
     <div id="liquidacion-status"></div>
-    <div class="metric-grid" id="metrics-com"></div>
+    <div id="metrics-com"></div>
     <div class="card">
       <div class="section-title">Detalle por arriendo</div>
       <div id="tabla-comisiones"></div>
@@ -176,7 +167,6 @@ td{padding:8px 10px;border-bottom:0.5px solid #e0e0e0}
     </div>
   </div>
 </div>
-
 <div class="toast" id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -184,7 +174,6 @@ td{padding:8px 10px;border-bottom:0.5px solid #e0e0e0}
 const SUPA_URL='https://dpbkiuvrtqbnykzpqxoh.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRwYmtpdXZydHFibnlrenBxeG9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3MTk5ODEsImV4cCI6MjA5MjI5NTk4MX0.D6h4RwYnkuNR4X8O9orcbsiwx99y_oCYNdqf4S3eC9k';
 const sb=supabase.createClient(SUPA_URL,SUPA_KEY);
-
 let autos=[],arriendos=[],gastos=[],liquidaciones=[],chartInstance=null;
 
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
@@ -193,7 +182,7 @@ function diasCalc(i,f){const d=Math.round((new Date(f)-new Date(i))/(864e5));ret
 function duenoDe(p){const a=autos.find(x=>x.patente===p);return a?a.dueno:'-';}
 function patenteBadge(p){return`<span class="badge badge-blue">${p||'-'}</span>`;}
 function catBadge(c){const m={bencina:'badge-amber',pasajes:'badge-blue',estacionamiento:'badge-gray',lavado:'badge-teal',mecanico:'badge-red',otros:'badge-coral'};return`<span class="badge ${m[c]||'badge-gray'}">${c}</span>`;}
-function duenos(){return [...new Set(autos.map(a=>a.dueno))].sort();}
+function listaDuenos(){return[...new Set(autos.map(a=>a.dueno))].sort();}
 
 async function loadAll(){
   const[ra,rr,rg,rl]=await Promise.all([
@@ -211,13 +200,13 @@ function populateSelects(){
     const sel=document.getElementById(id);if(!sel)return;
     const cur=sel.value;
     sel.innerHTML=id==='filtro-auto-gastos'?'<option value="">Todos</option>':'<option value="">Seleccionar</option>';
-    autos.forEach(a=>sel.innerHTML+=`<option value="${a.patente}" ${a.patente===cur?'selected':''}>${a.patente} — ${a.dueno}</option>`);
+    autos.forEach(a=>sel.innerHTML+=`<option value="${a.patente}"${a.patente===cur?' selected':''}>${a.patente} — ${a.dueno}</option>`);
   });
   ['filtro-dueno-dash','filtro-dueno-gastos'].forEach(id=>{
     const sel=document.getElementById(id);if(!sel)return;
     const cur=sel.value;
     sel.innerHTML='<option value="">Todos</option>';
-    duenos().forEach(d=>sel.innerHTML+=`<option value="${d}" ${d===cur?'selected':''}>${d}</option>`);
+    listaDuenos().forEach(d=>sel.innerHTML+=`<option value="${d}"${d===cur?' selected':''}>${d}</option>`);
   });
 }
 
@@ -236,18 +225,24 @@ function populateMeses(){
     ms.forEach(m=>{
       const[y,mo]=m.split('-');
       const lbl=new Date(y,mo-1).toLocaleDateString('es-CL',{month:'long',year:'numeric'});
-      sel.innerHTML+=`<option value="${m}" ${m===cur?'selected':''}>${lbl}</option>`;
+      sel.innerHTML+=`<option value="${m}"${m===cur?' selected':''}>${lbl}</option>`;
     });
   });
 }
 
 function filtrarMes(arr,mes,campo='fecha'){return mes?arr.filter(x=>(x[campo]||'').startsWith(mes)):arr;}
-function filtrarDueno(arr,dueno){
-  if(!dueno)return arr;
-  return arr.filter(x=>duenoDe(x.patente)===dueno);
-}
+function filtrarDueno(arr,dueno){return dueno?arr.filter(x=>duenoDe(x.patente)===dueno):arr;}
 
 function renderAll(){renderListaAutos();renderArriendos();renderGastos();renderDashboard();renderComisiones();}
+
+function showTab(t){
+  ['dashboard','autos','arriendos','gastos','comisiones'].forEach(x=>{
+    document.getElementById('tab-'+x).style.display=x===t?'block':'none';
+  });
+  document.querySelectorAll('.nav button').forEach((b,i)=>{
+    b.classList.toggle('active',['dashboard','autos','arriendos','gastos','comisiones'][i]===t);
+  });
+}
 
 async function agregarAuto(){
   const p=document.getElementById('nuevo-patente').value.trim().toUpperCase();
@@ -270,8 +265,7 @@ function renderListaAutos(){
   const el=document.getElementById('lista-autos');
   if(!autos.length){el.innerHTML='<div class="empty">Sin autos registrados</div>';return;}
   el.innerHTML=`<table><thead><tr><th>Patente</th><th>Dueño</th><th>Arriendos</th><th></th></tr></thead><tbody>`+
-  autos.map(a=>`<tr><td>${patenteBadge(a.patente)}</td><td>${a.dueno}</td><td>${arriendos.filter(r=>r.patente===a.patente).length}</td><td><button class="btn btn-danger" onclick="eliminarAuto('${a.patente}')">Quitar</button></td></tr>`).join('')+
-  '</tbody></table>';
+  autos.map(a=>`<tr><td>${patenteBadge(a.patente)}</td><td>${a.dueno}</td><td>${arriendos.filter(r=>r.patente===a.patente).length}</td><td><button class="btn btn-danger" onclick="eliminarAuto('${a.patente}')">Quitar</button></td></tr>`).join('')+'</tbody></table>';
 }
 
 async function agregarArriendo(){
@@ -298,13 +292,7 @@ function renderArriendos(){
   const el=document.getElementById('lista-arriendos');
   if(!arriendos.length){el.innerHTML='<div class="empty">Sin arriendos registrados</div>';return;}
   el.innerHTML=`<table><thead><tr><th>Patente</th><th>Dueño</th><th>Inicio</th><th>Término</th><th>Días</th><th>Cliente</th><th>Comisión</th><th></th></tr></thead><tbody>`+
-  arriendos.map(r=>`<tr>
-    <td>${patenteBadge(r.patente)}</td><td>${duenoDe(r.patente)}</td>
-    <td>${r.inicio}</td><td>${r.termino}</td>
-    <td style="text-align:center">${r.dias}</td><td>${r.cliente}</td>
-    <td style="font-weight:500;color:#0F6E56">${clp(r.dias*5000)}</td>
-    <td><button class="btn btn-danger" onclick="eliminarArriendo('${r.id}')">Quitar</button></td>
-  </tr>`).join('')+'</tbody></table>';
+  arriendos.map(r=>`<tr><td>${patenteBadge(r.patente)}</td><td>${duenoDe(r.patente)}</td><td>${r.inicio}</td><td>${r.termino}</td><td style="text-align:center">${r.dias}</td><td>${r.cliente}</td><td style="font-weight:500;color:#0F6E56">${clp(r.dias*5000)}</td><td><button class="btn btn-danger" onclick="eliminarArriendo('${r.id}')">Quitar</button></td></tr>`).join('')+'</tbody></table>';
 }
 
 async function agregarGasto(){
@@ -344,13 +332,7 @@ function renderGastos(){
   if(mesF)data=data.filter(x=>x.fecha.startsWith(mesF));
   if(!data.length){el.innerHTML='<div class="empty">Sin gastos registrados</div>';return;}
   el.innerHTML=`<table><thead><tr><th>Fecha</th><th>Patente</th><th>Dueño</th><th>Categoría</th><th>Monto</th><th>Descripción</th><th>Foto</th><th></th></tr></thead><tbody>`+
-  data.map(g=>`<tr>
-    <td>${g.fecha}</td><td>${patenteBadge(g.patente)}</td><td>${duenoDe(g.patente)}</td><td>${catBadge(g.cat)}</td>
-    <td style="font-weight:500">${clp(g.monto)}</td>
-    <td style="color:#888">${g.descripcion}</td>
-    <td>${g.foto?`<img src="${g.foto}" class="foto-preview" alt="comprobante">`:'—'}</td>
-    <td><button class="btn btn-danger" onclick="eliminarGasto('${g.id}')">Quitar</button></td>
-  </tr>`).join('')+'</tbody></table>';
+  data.map(g=>`<tr><td>${g.fecha}</td><td>${patenteBadge(g.patente)}</td><td>${duenoDe(g.patente)}</td><td>${catBadge(g.cat)}</td><td style="font-weight:500">${clp(g.monto)}</td><td style="color:#888">${g.descripcion}</td><td>${g.foto?`<img src="${g.foto}" class="foto-preview" alt="comprobante">`:'—'}</td><td><button class="btn btn-danger" onclick="eliminarGasto('${g.id}')">Quitar</button></td></tr>`).join('')+'</tbody></table>';
 }
 
 function renderDashboard(){
@@ -389,18 +371,18 @@ function renderDashboard(){
   rows.map(([p,d])=>`<tr><td>${patenteBadge(p)}</td><td>${d.dueno}</td><td style="font-weight:500">${clp(d.total)}</td></tr>`).join('')+'</tbody></table>';
 }
 
-async function eliminarLiquidacion(id){
-  if(!confirm('¿Eliminar esta liquidación?'))return;
-  await sb.from('liquidaciones').delete().eq('id',id);
-  toast('Liquidación eliminada');await loadAll();
-}
-
 async function registrarLiquidacion(total,dueno){
-  if(!confirm('¿Confirmar pago a '+dueno+' de '+clp(total)+'? Esto dejará el saldo en cero.'))return;
+  if(!confirm('¿Confirmar pago a '+dueno+' de '+clp(total)+'?'))return;
   const fecha=new Date().toISOString().split('T')[0];
   const{error}=await sb.from('liquidaciones').insert({monto:total,fecha,dueno,nota:'Liquidación registrada'});
   if(error){alert('Error: '+error.message);return;}
   toast('Liquidación registrada — '+clp(total));await loadAll();
+}
+
+async function eliminarLiquidacion(id){
+  if(!confirm('¿Eliminar esta liquidación?'))return;
+  await sb.from('liquidaciones').delete().eq('id',id);
+  toast('Liquidación eliminada');await loadAll();
 }
 
 function renderComisiones(){
@@ -408,28 +390,19 @@ function renderComisiones(){
   const af=filtrarMes(arriendos,mes,'inicio');
   const gf=filtrarMes(gastos,mes);
   const liqMes=filtrarMes(liquidaciones,mes);
-
-  const ds=duenos();
-  const statusEl=document.getElementById('liquidacion-status');
-  const metricsEl=document.getElementById('metrics-com');
-  const comEl=document.getElementById('tabla-comisiones');
-  const liqEl=document.getElementById('tabla-liquidaciones');
-
-  if(!ds.length){
-    statusEl.innerHTML='';metricsEl.innerHTML='';
-    comEl.innerHTML='<div class="empty">Sin dueños registrados</div>';
-    liqEl.innerHTML='';return;
-  }
+  const ds=listaDuenos();
 
   let statusHTML='',metricsHTML='',comHTML='',liqHTML='';
+  let hayDatos=false;
 
-  ds.forEach(d=>{
+  ds.forEach(function(d){
     const arrD=af.filter(r=>duenoDe(r.patente)===d);
     const gasD=gf.filter(g=>duenoDe(g.patente)===d);
-    const liqD=liqMes.filter(l=>l.dueno===d);
     const liqTodas=liquidaciones.filter(l=>l.dueno===d);
-
+    const liqD=liqMes.filter(l=>l.dueno===d);
     if(!arrD.length&&!gasD.length&&!liqTodas.length)return;
+    hayDatos=true;
+
     const tDias=arrD.reduce((s,r)=>s+r.dias,0);
     const tCom=tDias*5000;
     const tGastos=gasD.reduce((s,g)=>s+g.monto,0);
@@ -437,15 +410,14 @@ function renderComisiones(){
     const totalPagado=liqD.reduce((s,l)=>s+l.monto,0);
     const saldo=totalDeuda-totalPagado;
 
-    statusHTML+=`<div style="font-size:13px;font-weight:500;color:#888;margin:0.75rem 0 4px">${d}</div>`;
+    statusHTML+=`<div class="dueno-title">${d}</div>`;
     if(saldo<=0){
-      statusHTML+=`<div class="liquidacion-box zero"><div><div style="font-weight:500;color:#888">Al día</div><div style="font-size:12px;color:#aaa">Sin deuda pendiente</div></div></div>`;
+      statusHTML+=`<div class="liq-box zero"><div><div style="font-weight:500;color:#888">Al día</div><div style="font-size:12px;color:#aaa">Sin deuda pendiente</div></div></div>`;
     }else{
-      statusHTML+=`<div class="liquidacion-box"><div><div style="font-weight:500;color:#0F6E56">Saldo pendiente</div><div style="font-size:20px;font-weight:500;color:#0F6E56">${clp(saldo)}</div></div><button class="btn btn-green" onclick="registrarLiquidacion(${saldo},'${d}')">Registrar pago</button></div>`;
+      statusHTML+=`<div class="liq-box"><div><div style="font-weight:500;color:#0F6E56">Saldo pendiente</div><div style="font-size:20px;font-weight:500;color:#0F6E56">${clp(saldo)}</div></div><button class="btn btn-green" onclick="registrarLiquidacion(${saldo},'${d}')">Registrar pago</button></div>`;
     }
 
-    metricsHTML+=`<div style="font-size:13px;font-weight:500;margin:1rem 0 8px">${d}</div>
-    <div class="metric-grid">
+    metricsHTML+=`<div class="dueno-title">${d}</div><div class="metric-grid">
       <div class="metric"><div class="metric-label">Arriendos</div><div class="metric-value">${arrD.length}</div></div>
       <div class="metric"><div class="metric-label">Días</div><div class="metric-value">${tDias}</div></div>
       <div class="metric"><div class="metric-label">Comisión</div><div class="metric-value green">${clp(tCom)}</div></div>
@@ -454,35 +426,24 @@ function renderComisiones(){
       <div class="metric"><div class="metric-label">Ya pagado</div><div class="metric-value green">${clp(totalPagado)}</div></div>
     </div>`;
 
-    comHTML+=`<div style="font-size:13px;font-weight:500;margin:1rem 0 8px">${d}</div>`;
+    comHTML+=`<div class="dueno-title">${d}</div>`;
     if(!arrD.length){comHTML+='<div class="empty" style="padding:0.5rem">Sin arriendos</div>';}
-    else{
-      comHTML+=`<table><thead><tr><th>Patente</th><th>Inicio</th><th>Término</th><th>Días</th><th>Cliente</th><th>Comisión</th></tr></thead><tbody>`+
-      arrD.map(r=>`<tr><td>${patenteBadge(r.patente)}</td><td>${r.inicio}</td><td>${r.termino}</td><td style="text-align:center">${r.dias}</td><td>${r.cliente}</td><td style="font-weight:500;color:#0F6E56">${clp(r.dias*5000)}</td></tr>`).join('')+'</tbody></table>';
-    }
+    else{comHTML+=`<table><thead><tr><th>Patente</th><th>Inicio</th><th>Término</th><th>Días</th><th>Cliente</th><th>Comisión</th></tr></thead><tbody>`+arrD.map(r=>`<tr><td>${patenteBadge(r.patente)}</td><td>${r.inicio}</td><td>${r.termino}</td><td style="text-align:center">${r.dias}</td><td>${r.cliente}</td><td style="font-weight:500;color:#0F6E56">${clp(r.dias*5000)}</td></tr>`).join('')+'</tbody></table>';}
 
-    const liqTodas=liquidaciones.filter(l=>l.dueno===d);
-    liqHTML+=`<div style="font-size:13px;font-weight:500;margin:1rem 0 8px">${d}</div>`;
+    liqHTML+=`<div class="dueno-title">${d}</div>`;
     if(!liqTodas.length){liqHTML+='<div class="empty" style="padding:0.5rem">Sin liquidaciones</div>';}
-    else{
-      liqHTML+=`<table><thead><tr><th>Fecha</th><th>Monto</th><th>Nota</th><th></th></tr></thead><tbody>`+
-      liqTodas.map(l=>`<tr><td>${l.fecha}</td><td style="font-weight:500;color:#0F6E56">${clp(l.monto)}</td><td style="color:#888">${l.nota||'—'}</td><td><button class="btn btn-danger" onclick="eliminarLiquidacion('${l.id}')">Quitar</button></td></tr>`).join('')+'</tbody></table>';
-    }
+    else{liqHTML+=`<table><thead><tr><th>Fecha</th><th>Monto</th><th>Nota</th><th></th></tr></thead><tbody>`+liqTodas.map(l=>`<tr><td>${l.fecha}</td><td style="font-weight:500;color:#0F6E56">${clp(l.monto)}</td><td style="color:#888">${l.nota||'—'}</td><td><button class="btn btn-danger" onclick="eliminarLiquidacion('${l.id}')">Quitar</button></td></tr>`).join('')+'</tbody></table>';}
   });
 
-  statusEl.innerHTML=statusHTML;
-  metricsEl.innerHTML=metricsHTML;
-  comEl.innerHTML=comHTML;
-  liqEl.innerHTML=liqHTML;
-}
+  if(!hayDatos){
+    statusHTML='<div class="empty">Sin datos registrados</div>';
+    comHTML='';liqHTML='';metricsHTML='';
+  }
 
-function showTab(t){
-  ['dashboard','autos','arriendos','gastos','comisiones'].forEach(x=>{
-    document.getElementById('tab-'+x).style.display=x===t?'block':'none';
-  });
-  document.querySelectorAll('.nav button').forEach((b,i)=>{
-    b.classList.toggle('active',['dashboard','autos','arriendos','gastos','comisiones'][i]===t);
-  });
+  document.getElementById('liquidacion-status').innerHTML=statusHTML;
+  document.getElementById('metrics-com').innerHTML=metricsHTML;
+  document.getElementById('tabla-comisiones').innerHTML=comHTML;
+  document.getElementById('tabla-liquidaciones').innerHTML=liqHTML;
 }
 
 const hoy=new Date();
