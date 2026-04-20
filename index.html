@@ -389,6 +389,12 @@ function renderDashboard(){
   rows.map(([p,d])=>`<tr><td>${patenteBadge(p)}</td><td>${d.dueno}</td><td style="font-weight:500">${clp(d.total)}</td></tr>`).join('')+'</tbody></table>';
 }
 
+async function eliminarLiquidacion(id){
+  if(!confirm('¿Eliminar esta liquidación?'))return;
+  await sb.from('liquidaciones').delete().eq('id',id);
+  toast('Liquidación eliminada');await loadAll();
+}
+
 async function registrarLiquidacion(total){
   if(!confirm('¿Confirmar pago a Viviana de '+clp(total)+'? Esto dejará el saldo en cero.'))return;
   const fecha=new Date().toISOString().split('T')[0];
@@ -435,8 +441,8 @@ function renderComisiones(){
 
   const liqEl=document.getElementById('tabla-liquidaciones');
   if(!liquidaciones.length){liqEl.innerHTML='<div class="empty">Sin liquidaciones registradas</div>';return;}
-  liqEl.innerHTML=`<table><thead><tr><th>Fecha</th><th>Monto pagado</th><th>Nota</th></tr></thead><tbody>`+
-  liquidaciones.map(l=>`<tr><td>${l.fecha}</td><td style="font-weight:500;color:#0F6E56">${clp(l.monto)}</td><td style="color:#888">${l.nota||'—'}</td></tr>`).join('')+'</tbody></table>';
+  liqEl.innerHTML=`<table><thead><tr><th>Fecha</th><th>Monto pagado</th><th>Nota</th><th></th></tr></thead><tbody>`+
+  liquidaciones.map(l=>`<tr><td>${l.fecha}</td><td style="font-weight:500;color:#0F6E56">${clp(l.monto)}</td><td style="color:#888">${l.nota||'—'}</td><td><button class="btn btn-danger" onclick="eliminarLiquidacion('${l.id}')">Quitar</button></td></tr>`).join('')+'</tbody></table>';
 }
 
 function showTab(t){
