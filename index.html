@@ -395,10 +395,10 @@ async function eliminarLiquidacion(id){
   toast('Liquidación eliminada');await loadAll();
 }
 
-async function registrarLiquidacion(total){
-  if(!confirm('¿Confirmar pago a Viviana de '+clp(total)+'? Esto dejará el saldo en cero.'))return;
+async function registrarLiquidacion(total,dueno){
+  if(!confirm('¿Confirmar pago a '+dueno+' de '+clp(total)+'? Esto dejará el saldo en cero.'))return;
   const fecha=new Date().toISOString().split('T')[0];
-  const{error}=await sb.from('liquidaciones').insert({monto:total,fecha,nota:'Liquidación registrada'});
+  const{error}=await sb.from('liquidaciones').insert({monto:total,fecha,dueno,nota:'Liquidación registrada'});
   if(error){alert('Error: '+error.message);return;}
   toast('Liquidación registrada — '+clp(total));await loadAll();
 }
@@ -407,42 +407,70 @@ function renderComisiones(){
   const mes=document.getElementById('filtro-mes-com').value;
   const af=filtrarMes(arriendos,mes,'inicio');
   const gf=filtrarMes(gastos,mes);
-  const tDias=af.reduce((s,r)=>s+r.dias,0);
-  const tCom=tDias*5000;
-  const tGastos=gf.reduce((s,g)=>s+g.monto,0);
-  const totalDeuda=tCom+tGastos;
-
   const liqMes=filtrarMes(liquidaciones,mes);
-  const totalPagado=liqMes.reduce((s,l)=>s+l.monto,0);
-  const saldo=totalDeuda-totalPagado;
 
+  const ds=duenos();
   const statusEl=document.getElementById('liquidacion-status');
-  if(saldo<=0){
-    statusEl.innerHTML=`<div class="liquidacion-box zero"><div><div style="font-weight:500;color:#888">Viviana al día</div><div style="font-size:12px;color:#aaa">Sin deuda pendiente en este período</div></div></div>`;
-  }else{
-    statusEl.innerHTML=`<div class="liquidacion-box"><div><div style="font-weight:500;color:#0F6E56">Saldo pendiente a Viviana</div><div style="font-size:20px;font-weight:500;color:#0F6E56">${clp(saldo)}</div></div><button class="btn btn-green" onclick="registrarLiquidacion(${saldo})">Registrar pago</button></div>`;
-  }
-
-  document.getElementById('metrics-com').innerHTML=`
-    <div class="metric"><div class="metric-label">Arriendos</div><div class="metric-value">${af.length}</div></div>
-    <div class="metric"><div class="metric-label">Total días</div><div class="metric-value">${tDias}</div></div>
-    <div class="metric"><div class="metric-label">Comisión días</div><div class="metric-value green">${clp(tCom)}</div></div>
-    <div class="metric"><div class="metric-label">Gastos período</div><div class="metric-value">${clp(tGastos)}</div></div>
-    <div class="metric"><div class="metric-label">Total generado</div><div class="metric-value amber">${clp(totalDeuda)}</div></div>
-    <div class="metric"><div class="metric-label">Ya pagado</div><div class="metric-value green">${clp(totalPagado)}</div></div>
-  `;
-
-  const el=document.getElementById('tabla-comisiones');
-  if(!af.length){el.innerHTML='<div class="empty">Sin arriendos registrados</div>';}
-  else{
-    el.innerHTML=`<table><thead><tr><th>Patente</th><th>Dueño</th><th>Inicio</th><th>Término</th><th>Días</th><th>Cliente</th><th>Comisión</th></tr></thead><tbody>`+
-    af.map(r=>`<tr><td>${patenteBadge(r.patente)}</td><td>${duenoDe(r.patente)}</td><td>${r.inicio}</td><td>${r.termino}</td><td style="text-align:center">${r.dias}</td><td>${r.cliente}</td><td style="font-weight:500;color:#0F6E56">${clp(r.dias*5000)}</td></tr>`).join('')+'</tbody></table>';
-  }
-
+  const metricsEl=document.getElementById('metrics-com');
+  const comEl=document.getElementById('tabla-comisiones');
   const liqEl=document.getElementById('tabla-liquidaciones');
-  if(!liquidaciones.length){liqEl.innerHTML='<div class="empty">Sin liquidaciones registradas</div>';return;}
-  liqEl.innerHTML=`<table><thead><tr><th>Fecha</th><th>Monto pagado</th><th>Nota</th><th></th></tr></thead><tbody>`+
-  liquidaciones.map(l=>`<tr><td>${l.fecha}</td><td style="font-weight:500;color:#0F6E56">${clp(l.monto)}</td><td style="color:#888">${l.nota||'—'}</td><td><button class="btn btn-danger" onclick="eliminarLiquidacion('${l.id}')">Quitar</button></td></tr>`).join('')+'</tbody></table>';
+
+  if(!ds.length){
+    statusEl.innerHTML='';metricsEl.innerHTML='';
+    comEl.innerHTML='<div class="empty">Sin dueños registrados</div>';
+    liqEl.innerHTML='';return;
+  }
+
+  let statusHTML='',metricsHTML='',comHTML='',liqHTML='';
+
+  ds.forEach(d=>{
+    const arrD=af.filter(r=>duenoDe(r.patente)===d);
+    const gasD=gf.filter(g=>duenoDe(g.patente)===d);
+    const liqD=liqMes.filter(l=>l.dueno===d);
+    const tDias=arrD.reduce((s,r)=>s+r.dias,0);
+    const tCom=tDias*5000;
+    const tGastos=gasD.reduce((s,g)=>s+g.monto,0);
+    const totalDeuda=tCom+tGastos;
+    const totalPagado=liqD.reduce((s,l)=>s+l.monto,0);
+    const saldo=totalDeuda-totalPagado;
+
+    statusHTML+=`<div style="font-size:13px;font-weight:500;color:#888;margin:0.75rem 0 4px">${d}</div>`;
+    if(saldo<=0){
+      statusHTML+=`<div class="liquidacion-box zero"><div><div style="font-weight:500;color:#888">Al día</div><div style="font-size:12px;color:#aaa">Sin deuda pendiente</div></div></div>`;
+    }else{
+      statusHTML+=`<div class="liquidacion-box"><div><div style="font-weight:500;color:#0F6E56">Saldo pendiente</div><div style="font-size:20px;font-weight:500;color:#0F6E56">${clp(saldo)}</div></div><button class="btn btn-green" onclick="registrarLiquidacion(${saldo},'${d}')">Registrar pago</button></div>`;
+    }
+
+    metricsHTML+=`<div style="font-size:13px;font-weight:500;margin:1rem 0 8px">${d}</div>
+    <div class="metric-grid">
+      <div class="metric"><div class="metric-label">Arriendos</div><div class="metric-value">${arrD.length}</div></div>
+      <div class="metric"><div class="metric-label">Días</div><div class="metric-value">${tDias}</div></div>
+      <div class="metric"><div class="metric-label">Comisión</div><div class="metric-value green">${clp(tCom)}</div></div>
+      <div class="metric"><div class="metric-label">Gastos</div><div class="metric-value">${clp(tGastos)}</div></div>
+      <div class="metric"><div class="metric-label">Total generado</div><div class="metric-value amber">${clp(totalDeuda)}</div></div>
+      <div class="metric"><div class="metric-label">Ya pagado</div><div class="metric-value green">${clp(totalPagado)}</div></div>
+    </div>`;
+
+    comHTML+=`<div style="font-size:13px;font-weight:500;margin:1rem 0 8px">${d}</div>`;
+    if(!arrD.length){comHTML+='<div class="empty" style="padding:0.5rem">Sin arriendos</div>';}
+    else{
+      comHTML+=`<table><thead><tr><th>Patente</th><th>Inicio</th><th>Término</th><th>Días</th><th>Cliente</th><th>Comisión</th></tr></thead><tbody>`+
+      arrD.map(r=>`<tr><td>${patenteBadge(r.patente)}</td><td>${r.inicio}</td><td>${r.termino}</td><td style="text-align:center">${r.dias}</td><td>${r.cliente}</td><td style="font-weight:500;color:#0F6E56">${clp(r.dias*5000)}</td></tr>`).join('')+'</tbody></table>';
+    }
+
+    const liqTodas=liquidaciones.filter(l=>l.dueno===d);
+    liqHTML+=`<div style="font-size:13px;font-weight:500;margin:1rem 0 8px">${d}</div>`;
+    if(!liqTodas.length){liqHTML+='<div class="empty" style="padding:0.5rem">Sin liquidaciones</div>';}
+    else{
+      liqHTML+=`<table><thead><tr><th>Fecha</th><th>Monto</th><th>Nota</th><th></th></tr></thead><tbody>`+
+      liqTodas.map(l=>`<tr><td>${l.fecha}</td><td style="font-weight:500;color:#0F6E56">${clp(l.monto)}</td><td style="color:#888">${l.nota||'—'}</td><td><button class="btn btn-danger" onclick="eliminarLiquidacion('${l.id}')">Quitar</button></td></tr>`).join('')+'</tbody></table>';
+    }
+  });
+
+  statusEl.innerHTML=statusHTML;
+  metricsEl.innerHTML=metricsHTML;
+  comEl.innerHTML=comHTML;
+  liqEl.innerHTML=liqHTML;
 }
 
 function showTab(t){
