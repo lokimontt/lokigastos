@@ -427,6 +427,9 @@ function renderComisiones(){
     const arrD=af.filter(r=>duenoDe(r.patente)===d);
     const gasD=gf.filter(g=>duenoDe(g.patente)===d);
     const liqD=liqMes.filter(l=>l.dueno===d);
+    const liqTodas=liquidaciones.filter(l=>l.dueno===d);
+
+    if(!arrD.length&&!gasD.length&&!liqTodas.length)return;
     const tDias=arrD.reduce((s,r)=>s+r.dias,0);
     const tCom=tDias*5000;
     const tGastos=gasD.reduce((s,g)=>s+g.monto,0);
