@@ -1,19 +1,21 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { CONFIG_KEY, getTarifas, tarifasValidator } from "./lib";
+import { CONFIG_KEY, getTarifas, tarifasValidator, requirePin } from "./lib";
 
 export const get = query({
-  args: {},
+  args: { pin: v.string() },
   returns: tarifasValidator,
-  handler: async (ctx) => {
+  handler: async (ctx, args) => {
+    requirePin(args.pin);
     return await getTarifas(ctx);
   },
 });
 
 export const set = mutation({
-  args: { tarifaDia: v.number(), tarifaLavado: v.number() },
+  args: { pin: v.string(), tarifaDia: v.number(), tarifaLavado: v.number() },
   returns: v.null(),
   handler: async (ctx, args) => {
+    requirePin(args.pin);
     for (const t of [args.tarifaDia, args.tarifaLavado]) {
       if (!Number.isInteger(t) || t < 0) {
         throw new Error("Las tarifas deben ser enteros en CLP mayores o iguales a 0");

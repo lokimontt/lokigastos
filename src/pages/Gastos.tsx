@@ -1,5 +1,5 @@
 import { useRef, useState, type ChangeEvent, type FormEvent } from 'react'
-import { useMutation, useQuery } from 'convex/react'
+import { usePinMutation, usePinQuery } from '../lib/convexPin'
 import { api } from '../../convex/_generated/api'
 import type { Id } from '../../convex/_generated/dataModel'
 import { clp, errMsg, fecha, hoy } from '../lib/format'
@@ -18,12 +18,12 @@ type Props = {
 
 export function Gastos({ preset }: Props) {
   const toast = useToast()
-  const vehiculos = useQuery(api.vehiculos.list)
-  const crear = useMutation(api.gastos.create)
-  const actualizar = useMutation(api.gastos.update)
-  const eliminar = useMutation(api.gastos.remove)
-  const generarUploadUrl = useMutation(api.gastos.generateUploadUrl)
-  const descartarFoto = useMutation(api.gastos.descartarFoto)
+  const vehiculos = usePinQuery(api.vehiculos.list)
+  const crear = usePinMutation(api.gastos.create)
+  const actualizar = usePinMutation(api.gastos.update)
+  const eliminar = usePinMutation(api.gastos.remove)
+  const generarUploadUrl = usePinMutation(api.gastos.generateUploadUrl)
+  const descartarFoto = usePinMutation(api.gastos.descartarFoto)
 
   // ---- formulario
   const [vehiculoId, setVehiculoId] = useState('')
@@ -38,7 +38,7 @@ export function Gastos({ preset }: Props) {
   const fileRef = useRef<HTMLInputElement>(null)
 
   // Arriendos del vehículo seleccionado (para ligar el gasto a una entrega)
-  const arriendosVehiculo = useQuery(api.arriendos.list, vehiculoId ? { vehiculoId: vehiculoId as Id<'vehiculos'> } : 'skip')
+  const arriendosVehiculo = usePinQuery(api.arriendos.list, vehiculoId ? { vehiculoId: vehiculoId as Id<'vehiculos'> } : 'skip')
 
   // Preselección desde "Agregar gasto de esta entrega" (ajuste de estado durante el render, por key)
   const [presetKey, setPresetKey] = useState<number | null>(null)
@@ -111,7 +111,7 @@ export function Gastos({ preset }: Props) {
   const [mes, setMes] = useState('')
   const [fVehiculo, setFVehiculo] = useState('')
   const [fCategoria, setFCategoria] = useState('')
-  const gastos = useQuery(api.gastos.list, {
+  const gastos = usePinQuery(api.gastos.list, {
     mes: mes || undefined,
     vehiculoId: fVehiculo ? (fVehiculo as Id<'vehiculos'>) : undefined,
     categoria: fCategoria ? (fCategoria as Categoria) : undefined,

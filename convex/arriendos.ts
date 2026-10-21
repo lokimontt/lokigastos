@@ -7,14 +7,17 @@ import {
   getTarifas,
   getVehiculoOrThrow,
   mesDe,
+  requirePin,
 } from "./lib";
 
 export const list = query({
   args: {
+    pin: v.string(),
     mes: v.optional(v.string()),
     vehiculoId: v.optional(v.id("vehiculos")),
   },
   handler: async (ctx, args) => {
+    requirePin(args.pin);
     let arriendos: Doc<"arriendos">[];
     if (args.vehiculoId !== undefined) {
       const vehiculoId = args.vehiculoId;
@@ -77,6 +80,7 @@ export const list = query({
 
 export const create = mutation({
   args: {
+    pin: v.string(),
     vehiculoId: v.id("vehiculos"),
     inicio: v.string(),
     termino: v.string(),
@@ -85,6 +89,7 @@ export const create = mutation({
   },
   returns: v.id("arriendos"),
   handler: async (ctx, args) => {
+    requirePin(args.pin);
     await getVehiculoOrThrow(ctx, args.vehiculoId);
     const { tarifaDia, tarifaLavado } = await getTarifas(ctx);
     const dias = calcularDias(args.inicio, args.termino);
@@ -105,6 +110,7 @@ export const create = mutation({
 
 export const update = mutation({
   args: {
+    pin: v.string(),
     id: v.id("arriendos"),
     vehiculoId: v.optional(v.id("vehiculos")),
     inicio: v.optional(v.string()),
@@ -114,7 +120,8 @@ export const update = mutation({
     pagado: v.optional(v.boolean()),
   },
   returns: v.null(),
-  handler: async (ctx, { id, ...campos }) => {
+  handler: async (ctx, { pin, id, ...campos }) => {
+    requirePin(pin);
     const arriendo = await ctx.db.get("arriendos", id);
     if (!arriendo) throw new Error("Arriendo no encontrado");
 
@@ -171,9 +178,10 @@ export const update = mutation({
 });
 
 export const remove = mutation({
-  args: { id: v.id("arriendos") },
+  args: { pin: v.string(), id: v.id("arriendos") },
   returns: v.null(),
-  handler: async (ctx, { id }) => {
+  handler: async (ctx, { pin, id }) => {
+    requirePin(pin);
     const arriendo = await ctx.db.get("arriendos", id);
     if (!arriendo) throw new Error("Arriendo no encontrado");
     // Los gastos ligados se desligan (no se eliminan)

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useQuery } from 'convex/react'
+import { usePinQuery } from '../lib/convexPin'
 import { api } from '../../convex/_generated/api'
 import { clp, mesLabel } from '../lib/format'
 import { MesFilter } from '../components/MesFilter'
@@ -8,7 +8,7 @@ import { Card, Empty, Loading, Patente, TableWrap } from '../components/Ui'
 
 export function Resumen() {
   const [mes, setMes] = useState('')
-  const r = useQuery(api.reportes.resumen, { mes: mes || undefined })
+  const r = usePinQuery(api.reportes.resumen, { mes: mes || undefined })
 
   return (
     <>

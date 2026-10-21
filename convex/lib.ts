@@ -93,3 +93,13 @@ export async function cargarVehiculosConDueno(ctx: QueryCtx | MutationCtx) {
   );
   return { vehiculos, duenos, duenosById, vehiculosById };
 }
+
+/**
+ * Verifica el PIN compartido de la app (env var APP_PIN).
+ * No usa ctx, así que sirve en queries y mutations.
+ */
+export function requirePin(pin: string): void {
+  const expected = process.env.APP_PIN;
+  if (!expected) throw new Error("APP_PIN no configurado");
+  if (pin !== expected) throw new Error("PIN incorrecto");
+}

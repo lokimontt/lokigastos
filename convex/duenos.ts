@@ -1,10 +1,11 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { getDuenoOrThrow } from "./lib";
+import { getDuenoOrThrow, requirePin } from "./lib";
 
 export const list = query({
-  args: {},
-  handler: async (ctx) => {
+  args: { pin: v.string() },
+  handler: async (ctx, args) => {
+    requirePin(args.pin);
     const duenos = await ctx.db
       .query("duenos")
       .withIndex("by_nombre")
@@ -19,12 +20,14 @@ export const list = query({
 
 export const create = mutation({
   args: {
+    pin: v.string(),
     nombre: v.string(),
     telefono: v.optional(v.string()),
     notas: v.optional(v.string()),
   },
   returns: v.id("duenos"),
   handler: async (ctx, args) => {
+    requirePin(args.pin);
     const nombre = args.nombre.trim();
     if (!nombre) throw new Error("El nombre es obligatorio");
     return await ctx.db.insert("duenos", {
@@ -38,6 +41,7 @@ export const create = mutation({
 
 export const update = mutation({
   args: {
+    pin: v.string(),
     id: v.id("duenos"),
     nombre: v.optional(v.string()),
     telefono: v.optional(v.string()),
@@ -45,7 +49,8 @@ export const update = mutation({
     activo: v.optional(v.boolean()),
   },
   returns: v.null(),
-  handler: async (ctx, { id, ...campos }) => {
+  handler: async (ctx, { pin, id, ...campos }) => {
+    requirePin(pin);
     await getDuenoOrThrow(ctx, id);
     const patch: Partial<{
       nombre: string;
@@ -71,9 +76,10 @@ export const update = mutation({
 });
 
 export const remove = mutation({
-  args: { id: v.id("duenos") },
+  args: { pin: v.string(), id: v.id("duenos") },
   returns: v.null(),
-  handler: async (ctx, { id }) => {
+  handler: async (ctx, { pin, id }) => {
+    requirePin(pin);
     await getDuenoOrThrow(ctx, id);
     const vehiculo = await ctx.db
       .query("vehiculos")

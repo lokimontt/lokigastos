@@ -2,7 +2,7 @@ import { query } from "./_generated/server";
 import { v } from "convex/values";
 import type { Doc, Id } from "./_generated/dataModel";
 import { categoriaGasto } from "./schema";
-import { cargarVehiculosConDueno } from "./lib";
+import { cargarVehiculosConDueno, requirePin } from "./lib";
 import type { QueryCtx } from "./_generated/server";
 
 async function cargarPeriodo(ctx: QueryCtx, mes: string | undefined) {
@@ -76,7 +76,7 @@ async function acumularPorVehiculo(ctx: QueryCtx, mes: string | undefined) {
 }
 
 export const resumen = query({
-  args: { mes: v.optional(v.string()) },
+  args: { pin: v.string(), mes: v.optional(v.string()) },
   returns: v.object({
     totalGastos: v.number(),
     totalDias: v.number(),
@@ -99,6 +99,7 @@ export const resumen = query({
     ),
   }),
   handler: async (ctx, args) => {
+    requirePin(args.pin);
     const { arriendos, gastos, porVehiculo } = await acumularPorVehiculo(
       ctx,
       args.mes,
@@ -140,7 +141,7 @@ export const resumen = query({
 });
 
 export const porDueno = query({
-  args: { mes: v.optional(v.string()) },
+  args: { pin: v.string(), mes: v.optional(v.string()) },
   returns: v.array(
     v.object({
       duenoId: v.id("duenos"),
@@ -162,6 +163,7 @@ export const porDueno = query({
     }),
   ),
   handler: async (ctx, args) => {
+    requirePin(args.pin);
     const { porVehiculo, vehiculosById } = await acumularPorVehiculo(
       ctx,
       args.mes,
@@ -224,9 +226,10 @@ export const porDueno = query({
 });
 
 export const mesesDisponibles = query({
-  args: {},
+  args: { pin: v.string() },
   returns: v.array(v.string()),
-  handler: async (ctx) => {
+  handler: async (ctx, args) => {
+    requirePin(args.pin);
     const [arriendos, gastos] = await Promise.all([
       ctx.db.query("arriendos").withIndex("by_mes").collect(),
       ctx.db.query("gastos").withIndex("by_mes").collect(),

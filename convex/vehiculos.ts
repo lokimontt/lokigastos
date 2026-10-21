@@ -6,11 +6,13 @@ import {
   getDuenoOrThrow,
   getVehiculoOrThrow,
   normalizarPatente,
+  requirePin,
 } from "./lib";
 
 export const list = query({
-  args: {},
-  handler: async (ctx) => {
+  args: { pin: v.string() },
+  handler: async (ctx, args) => {
+    requirePin(args.pin);
     const { vehiculos, duenosById } = await cargarVehiculosConDueno(ctx);
     return vehiculos
       .map((veh) => {
@@ -41,6 +43,7 @@ async function assertPatenteLibre(
 
 export const create = mutation({
   args: {
+    pin: v.string(),
     patente: v.string(),
     marca: v.optional(v.string()),
     modelo: v.optional(v.string()),
@@ -48,6 +51,7 @@ export const create = mutation({
   },
   returns: v.id("vehiculos"),
   handler: async (ctx, args) => {
+    requirePin(args.pin);
     const patente = normalizarPatente(args.patente);
     if (!patente) throw new Error("La patente es obligatoria");
     await getDuenoOrThrow(ctx, args.duenoId);
@@ -64,6 +68,7 @@ export const create = mutation({
 
 export const update = mutation({
   args: {
+    pin: v.string(),
     id: v.id("vehiculos"),
     patente: v.optional(v.string()),
     marca: v.optional(v.string()),
@@ -72,7 +77,8 @@ export const update = mutation({
     activo: v.optional(v.boolean()),
   },
   returns: v.null(),
-  handler: async (ctx, { id, ...campos }) => {
+  handler: async (ctx, { pin, id, ...campos }) => {
+    requirePin(pin);
     await getVehiculoOrThrow(ctx, id);
     const patch: Partial<{
       patente: string;
@@ -102,9 +108,10 @@ export const update = mutation({
 });
 
 export const remove = mutation({
-  args: { id: v.id("vehiculos") },
+  args: { pin: v.string(), id: v.id("vehiculos") },
   returns: v.null(),
-  handler: async (ctx, { id }) => {
+  handler: async (ctx, { pin, id }) => {
+    requirePin(pin);
     await getVehiculoOrThrow(ctx, id);
     const arriendo = await ctx.db
       .query("arriendos")

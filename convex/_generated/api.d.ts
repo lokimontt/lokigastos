@@ -9,6 +9,7 @@
  */
 
 import type * as arriendos from "../arriendos.js";
+import type * as auth from "../auth.js";
 import type * as config from "../config.js";
 import type * as duenos from "../duenos.js";
 import type * as gastos from "../gastos.js";
@@ -25,6 +26,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   arriendos: typeof arriendos;
+  auth: typeof auth;
   config: typeof config;
   duenos: typeof duenos;
   gastos: typeof gastos;

@@ -3,16 +3,18 @@ import { v } from "convex/values";
 import type { Doc, Id } from "./_generated/dataModel";
 import type { MutationCtx } from "./_generated/server";
 import { categoriaGasto } from "./schema";
-import { cargarVehiculosConDueno, getVehiculoOrThrow, mesDe } from "./lib";
+import { cargarVehiculosConDueno, getVehiculoOrThrow, mesDe, requirePin } from "./lib";
 
 export const list = query({
   args: {
+    pin: v.string(),
     mes: v.optional(v.string()),
     vehiculoId: v.optional(v.id("vehiculos")),
     arriendoId: v.optional(v.id("arriendos")),
     categoria: v.optional(categoriaGasto),
   },
   handler: async (ctx, args) => {
+    requirePin(args.pin);
     let gastos: Doc<"gastos">[];
     if (args.arriendoId !== undefined) {
       const arriendoId = args.arriendoId;
@@ -98,6 +100,7 @@ function validarMonto(monto: number) {
 
 export const create = mutation({
   args: {
+    pin: v.string(),
     vehiculoId: v.id("vehiculos"),
     arriendoId: v.optional(v.id("arriendos")),
     categoria: categoriaGasto,
@@ -108,6 +111,7 @@ export const create = mutation({
   },
   returns: v.id("gastos"),
   handler: async (ctx, args) => {
+    requirePin(args.pin);
     await getVehiculoOrThrow(ctx, args.vehiculoId);
     if (args.arriendoId !== undefined) {
       await validarArriendo(ctx, args.arriendoId, args.vehiculoId);
@@ -130,6 +134,7 @@ export const create = mutation({
 
 export const update = mutation({
   args: {
+    pin: v.string(),
     id: v.id("gastos"),
     vehiculoId: v.optional(v.id("vehiculos")),
     // null = desligar del arriendo
@@ -143,7 +148,8 @@ export const update = mutation({
     pagado: v.optional(v.boolean()),
   },
   returns: v.null(),
-  handler: async (ctx, { id, ...campos }) => {
+  handler: async (ctx, { pin, id, ...campos }) => {
+    requirePin(pin);
     const gasto = await ctx.db.get("gastos", id);
     if (!gasto) throw new Error("Gasto no encontrado");
 
@@ -195,9 +201,10 @@ export const update = mutation({
 });
 
 export const remove = mutation({
-  args: { id: v.id("gastos") },
+  args: { pin: v.string(), id: v.id("gastos") },
   returns: v.null(),
-  handler: async (ctx, { id }) => {
+  handler: async (ctx, { pin, id }) => {
+    requirePin(pin);
     const gasto = await ctx.db.get("gastos", id);
     if (!gasto) throw new Error("Gasto no encontrado");
     if (gasto.fotoId) await borrarFotoSiExiste(ctx, gasto.fotoId);
@@ -208,9 +215,10 @@ export const remove = mutation({
 
 /** Borra una foto subida que no llegó a asociarse a un gasto (p.ej. si create falló). */
 export const descartarFoto = mutation({
-  args: { fotoId: v.id("_storage") },
+  args: { pin: v.string(), fotoId: v.id("_storage") },
   returns: v.null(),
-  handler: async (ctx, { fotoId }) => {
+  handler: async (ctx, { pin, fotoId }) => {
+    requirePin(pin);
     const enUso = await ctx.db
       .query("gastos")
       .filter((q) => q.eq(q.field("fotoId"), fotoId))
@@ -222,9 +230,10 @@ export const descartarFoto = mutation({
 });
 
 export const generateUploadUrl = mutation({
-  args: {},
+  args: { pin: v.string() },
   returns: v.string(),
-  handler: async (ctx) => {
+  handler: async (ctx, args) => {
+    requirePin(args.pin);
     return await ctx.storage.generateUploadUrl();
   },
 });

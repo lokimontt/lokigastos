@@ -132,3 +132,12 @@ tfoot td{font-weight:600;background:#fafaf8}
 .item-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px}
 .item-meta{font-size:12px;color:#888;display:flex;gap:6px;flex-wrap:wrap}
 .item-foot{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap}
+
+/* Login */
+.login{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:1rem}
+.login-card{width:100%;max-width:360px;margin:0}
+.login-title{font-size:20px;font-weight:600;margin:0 0 4px;text-align:center}
+.login-sub{font-size:13px;color:#888;margin:0 0 16px;text-align:center}
+.login-error{color:#A32D2D;font-size:13px;margin:-4px 0 10px}
+.login-btn{width:100%;min-height:44px;font-size:15px}
+.topbar-right{display:flex;align-items:center;gap:10px}

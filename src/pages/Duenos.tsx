@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { useMutation, useQuery } from 'convex/react'
+import { usePinMutation, usePinQuery } from '../lib/convexPin'
 import { api } from '../../convex/_generated/api'
 import type { Id } from '../../convex/_generated/dataModel'
 import { clp, errMsg, mesLabel } from '../lib/format'
@@ -9,10 +9,10 @@ import { Card, Empty, Loading, Patente, TableWrap } from '../components/Ui'
 
 export function Duenos() {
   const toast = useToast()
-  const duenos = useQuery(api.duenos.list)
-  const crear = useMutation(api.duenos.create)
-  const actualizar = useMutation(api.duenos.update)
-  const eliminar = useMutation(api.duenos.remove)
+  const duenos = usePinQuery(api.duenos.list)
+  const crear = usePinMutation(api.duenos.create)
+  const actualizar = usePinMutation(api.duenos.update)
+  const eliminar = usePinMutation(api.duenos.remove)
 
   // Formulario (crear o editar)
   const [editId, setEditId] = useState<Id<'duenos'> | null>(null)
@@ -82,7 +82,7 @@ export function Duenos() {
 
   // Liquidación
   const [mes, setMes] = useState('')
-  const liquidacion = useQuery(api.reportes.porDueno, { mes: mes || undefined })
+  const liquidacion = usePinQuery(api.reportes.porDueno, { mes: mes || undefined })
 
   return (
     <>

@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { useMutation, useQuery } from 'convex/react'
+import { usePinMutation, usePinQuery } from '../lib/convexPin'
 import { api } from '../../convex/_generated/api'
 import type { Id } from '../../convex/_generated/dataModel'
 import { calcDias, clp, errMsg, fecha, hoy } from '../lib/format'
@@ -13,13 +13,13 @@ type Props = {
 
 export function Arriendos({ onAgregarGasto }: Props) {
   const toast = useToast()
-  const vehiculos = useQuery(api.vehiculos.list)
-  const config = useQuery(api.config.get)
+  const vehiculos = usePinQuery(api.vehiculos.list)
+  const config = usePinQuery(api.config.get)
   const [mes, setMes] = useState('')
-  const arriendos = useQuery(api.arriendos.list, { mes: mes || undefined })
-  const crear = useMutation(api.arriendos.create)
-  const actualizar = useMutation(api.arriendos.update)
-  const eliminar = useMutation(api.arriendos.remove)
+  const arriendos = usePinQuery(api.arriendos.list, { mes: mes || undefined })
+  const crear = usePinMutation(api.arriendos.create)
+  const actualizar = usePinMutation(api.arriendos.update)
+  const eliminar = usePinMutation(api.arriendos.remove)
 
   const [vehiculoId, setVehiculoId] = useState('')
   const [inicio, setInicio] = useState(hoy())

@@ -24,10 +24,16 @@ npm run dev      # en otra
 ```
 `.env.local` lo genera `npx convex dev` (no se versiona).
 
+## Acceso
+La app pide un **PIN compartido**. Se define con la variable `APP_PIN` del deployment de Convex:
+```bash
+npx convex env set APP_PIN 1234          # dev
+npx convex env set APP_PIN 1234 --prod   # producción
+```
+
 ## Producción
-1. En Convex dashboard → Settings → genera un **Deploy Key** de producción.
-2. En Vercel, variable de entorno `CONVEX_DEPLOY_KEY` con ese valor.
-3. Vercel usa `vercel.json`: `npx convex deploy --cmd 'npm run build'`, que despliega funciones a prod y setea `VITE_CONVEX_URL` automáticamente.
+- Backend: `npx convex deploy` (deployment prod `enchanted-snail-101`) sube las funciones.
+- Frontend: Vercel (proyecto `lokigastos`) construye con `npm run build` usando la variable `VITE_CONVEX_URL` apuntando al deployment prod. Cada push a `main` despliega.
 
 ## Datos de ejemplo
 ```bash

@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { useMutation, useQuery } from 'convex/react'
+import { usePinMutation, usePinQuery } from '../lib/convexPin'
 import { api } from '../../convex/_generated/api'
 import type { Id } from '../../convex/_generated/dataModel'
 import { errMsg } from '../lib/format'
@@ -8,12 +8,12 @@ import { Card, Empty, Loading, Patente, TableWrap } from '../components/Ui'
 
 export function Vehiculos() {
   const toast = useToast()
-  const vehiculos = useQuery(api.vehiculos.list)
-  const duenos = useQuery(api.duenos.list)
-  const arriendos = useQuery(api.arriendos.list, {})
-  const crear = useMutation(api.vehiculos.create)
-  const actualizar = useMutation(api.vehiculos.update)
-  const eliminar = useMutation(api.vehiculos.remove)
+  const vehiculos = usePinQuery(api.vehiculos.list)
+  const duenos = usePinQuery(api.duenos.list)
+  const arriendos = usePinQuery(api.arriendos.list, {})
+  const crear = usePinMutation(api.vehiculos.create)
+  const actualizar = usePinMutation(api.vehiculos.update)
+  const eliminar = usePinMutation(api.vehiculos.remove)
 
   const [patente, setPatente] = useState('')
   const [marca, setMarca] = useState('')
