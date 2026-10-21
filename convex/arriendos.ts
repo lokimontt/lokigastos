@@ -120,21 +120,42 @@ export const update = mutation({
 
     const patch: Partial<Omit<Doc<"arriendos">, "_id" | "_creationTime">> = {};
 
-    if (campos.vehiculoId !== undefined) {
-      await getVehiculoOrThrow(ctx, campos.vehiculoId);
-      patch.vehiculoId = campos.vehiculoId;
+    const cambiaVehiculo =
+      campos.vehiculoId !== undefined && campos.vehiculoId !== arriendo.vehiculoId;
+    const cambiaFechas =
+      (campos.inicio !== undefined && campos.inicio !== arriendo.inicio) ||
+      (campos.termino !== undefined && campos.termino !== arriendo.termino);
+    if (arriendo.pagado && (cambiaVehiculo || cambiaFechas)) {
+      throw new Error(
+        "El arriendo ya está pagado: no se puede cambiar vehículo ni fechas",
+      );
     }
 
-    if (campos.inicio !== undefined || campos.termino !== undefined) {
+    if (cambiaVehiculo && campos.vehiculoId !== undefined) {
+      await getVehiculoOrThrow(ctx, campos.vehiculoId);
+      patch.vehiculoId = campos.vehiculoId;
+      // Mantener coherentes los gastos ligados a este arriendo
+      const gastos = await ctx.db
+        .query("gastos")
+        .withIndex("by_arriendo", (q) => q.eq("arriendoId", id))
+        .collect();
+      for (const g of gastos) {
+        await ctx.db.patch("gastos", g._id, { vehiculoId: campos.vehiculoId });
+      }
+    }
+
+    if (cambiaFechas) {
       const inicio = campos.inicio ?? arriendo.inicio;
       const termino = campos.termino ?? arriendo.termino;
-      const { tarifaDia, tarifaLavado } = await getTarifas(ctx);
+      // Conservar la tarifa histórica del arriendo (no la config actual)
+      const tarifaDia =
+        arriendo.dias > 0 ? arriendo.comisionDias / arriendo.dias : 0;
       const dias = calcularDias(inicio, termino);
       patch.inicio = inicio;
       patch.termino = termino;
       patch.dias = dias;
-      patch.comisionDias = dias * tarifaDia;
-      patch.lavado = tarifaLavado;
+      patch.comisionDias = Math.round(dias * tarifaDia);
+      patch.lavado = arriendo.lavado;
       patch.mes = mesDe(inicio);
     }
 

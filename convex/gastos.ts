@@ -1,6 +1,7 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import type { Doc, Id } from "./_generated/dataModel";
+import type { MutationCtx } from "./_generated/server";
 import { categoriaGasto } from "./schema";
 import { cargarVehiculosConDueno, getVehiculoOrThrow, mesDe } from "./lib";
 
@@ -76,6 +77,19 @@ async function validarArriendo(
   }
 }
 
+async function assertFotoExiste(
+  ctx: Parameters<typeof getVehiculoOrThrow>[0],
+  fotoId: Id<"_storage">,
+) {
+  const meta = await ctx.db.system.get("_storage", fotoId);
+  if (!meta) throw new Error("La foto no existe en storage");
+}
+
+async function borrarFotoSiExiste(ctx: MutationCtx, fotoId: Id<"_storage">) {
+  const meta = await ctx.db.system.get("_storage", fotoId);
+  if (meta) await ctx.storage.delete(fotoId);
+}
+
 function validarMonto(monto: number) {
   if (!Number.isInteger(monto) || monto < 0) {
     throw new Error("El monto debe ser un entero en CLP mayor o igual a 0");
@@ -99,6 +113,7 @@ export const create = mutation({
       await validarArriendo(ctx, args.arriendoId, args.vehiculoId);
     }
     validarMonto(args.monto);
+    if (args.fotoId !== undefined) await assertFotoExiste(ctx, args.fotoId);
     return await ctx.db.insert("gastos", {
       vehiculoId: args.vehiculoId,
       arriendoId: args.arriendoId,
@@ -164,8 +179,11 @@ export const update = mutation({
     }
     if (campos.fotoId !== undefined) {
       const nuevaFoto = campos.fotoId ?? undefined;
+      if (nuevaFoto !== undefined && nuevaFoto !== gasto.fotoId) {
+        await assertFotoExiste(ctx, nuevaFoto);
+      }
       if (gasto.fotoId && gasto.fotoId !== nuevaFoto) {
-        await ctx.storage.delete(gasto.fotoId);
+        await borrarFotoSiExiste(ctx, gasto.fotoId);
       }
       patch.fotoId = nuevaFoto;
     }
@@ -182,11 +200,23 @@ export const remove = mutation({
   handler: async (ctx, { id }) => {
     const gasto = await ctx.db.get("gastos", id);
     if (!gasto) throw new Error("Gasto no encontrado");
-    if (gasto.fotoId) {
-      const meta = await ctx.db.system.get("_storage", gasto.fotoId);
-      if (meta) await ctx.storage.delete(gasto.fotoId);
-    }
+    if (gasto.fotoId) await borrarFotoSiExiste(ctx, gasto.fotoId);
     await ctx.db.delete("gastos", id);
+    return null;
+  },
+});
+
+/** Borra una foto subida que no llegó a asociarse a un gasto (p.ej. si create falló). */
+export const descartarFoto = mutation({
+  args: { fotoId: v.id("_storage") },
+  returns: v.null(),
+  handler: async (ctx, { fotoId }) => {
+    const enUso = await ctx.db
+      .query("gastos")
+      .filter((q) => q.eq(q.field("fotoId"), fotoId))
+      .first();
+    if (enUso) throw new Error("La foto está asociada a un gasto");
+    await borrarFotoSiExiste(ctx, fotoId);
     return null;
   },
 });

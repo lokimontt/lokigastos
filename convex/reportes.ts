@@ -183,21 +183,23 @@ export const porDueno = query({
       total: number;
     };
     const acum = new Map<Id<"duenos">, AcumDueno>();
+    const SIN_DUENO = "" as Id<"duenos">;
     for (const pv of porVehiculo) {
       const veh = vehiculosById.get(pv.vehiculoId);
-      if (!veh || !veh.dueno) continue; // vehículo/dueño huérfano
-      let d = acum.get(veh.duenoId);
+      // Vehículo o dueño huérfano → grupo "Sin dueño"
+      const duenoId = veh?.dueno ? veh.duenoId : SIN_DUENO;
+      let d = acum.get(duenoId);
       if (!d) {
         d = {
-          duenoId: veh.duenoId,
-          nombre: veh.dueno.nombre,
+          duenoId,
+          nombre: veh?.dueno?.nombre ?? "Sin dueño",
           vehiculos: [],
           dias: 0,
           comision: 0,
           gastos: 0,
           total: 0,
         };
-        acum.set(veh.duenoId, d);
+        acum.set(duenoId, d);
       }
       d.vehiculos.push({
         vehiculoId: pv.vehiculoId,

@@ -14,8 +14,10 @@ export const set = mutation({
   args: { tarifaDia: v.number(), tarifaLavado: v.number() },
   returns: v.null(),
   handler: async (ctx, args) => {
-    if (args.tarifaDia < 0 || args.tarifaLavado < 0) {
-      throw new Error("Las tarifas no pueden ser negativas");
+    for (const t of [args.tarifaDia, args.tarifaLavado]) {
+      if (!Number.isInteger(t) || t < 0) {
+        throw new Error("Las tarifas deben ser enteros en CLP mayores o iguales a 0");
+      }
     }
     const existing = await ctx.db
       .query("config")

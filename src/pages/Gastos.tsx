@@ -23,6 +23,7 @@ export function Gastos({ preset }: Props) {
   const actualizar = useMutation(api.gastos.update)
   const eliminar = useMutation(api.gastos.remove)
   const generarUploadUrl = useMutation(api.gastos.generateUploadUrl)
+  const descartarFoto = useMutation(api.gastos.descartarFoto)
 
   // ---- formulario
   const [vehiculoId, setVehiculoId] = useState('')
@@ -78,8 +79,8 @@ export function Gastos({ preset }: Props) {
       return
     }
     setGuardando(true)
+    let fotoId: Id<'_storage'> | undefined
     try {
-      let fotoId: Id<'_storage'> | undefined
       if (foto) {
         const url = await generarUploadUrl()
         fotoId = (await subirBlob(url, foto.blob)) as Id<'_storage'>
@@ -99,6 +100,8 @@ export function Gastos({ preset }: Props) {
       limpiarFoto()
     } catch (err) {
       toast(errMsg(err), 'error')
+      // Si la foto ya se subió pero el gasto no se creó, evitar archivo huérfano
+      if (fotoId) descartarFoto({ fotoId }).catch(() => {})
     } finally {
       setGuardando(false)
     }
