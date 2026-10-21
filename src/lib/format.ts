@@ -48,3 +48,18 @@ export function errMsg(e: unknown): string {
   }
   return String(e)
 }
+
+/** Suma `n` días a una fecha 'YYYY-MM-DD' (hora local). */
+export function sumarDias(fechaISO: string, n: number): string {
+  const d = parseFecha(fechaISO)
+  d.setDate(d.getDate() + n)
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  return `${d.getFullYear()}-${mm}-${dd}`
+}
+
+/** 'YYYY-MM-DD' → '21 oct' (fecha corta para tarjetas). */
+export function fechaCorta(s: string | undefined | null): string {
+  if (!s) return '—'
+  return parseFecha(s).toLocaleDateString('es-CL', { day: 'numeric', month: 'short' }).replace('.', '')
+}

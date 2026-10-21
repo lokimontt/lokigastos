@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { Id } from '../convex/_generated/dataModel'
 import { Nav, type Tab } from './components/Nav'
 import { ToastProvider } from './components/Toast'
+import { ConfirmProvider } from './components/ConfirmDialog'
 import { PinErrorBoundary } from './components/PinErrorBoundary'
 import { PinProvider, usePin } from './lib/pin'
 import { Login } from './pages/Login'
@@ -34,7 +35,7 @@ function Main() {
   const [tab, setTab] = useState<Tab>('resumen')
   const [gastoPreset, setGastoPreset] = useState<GastoPreset | null>(null)
 
-  const [hoyLabel] = useState(() => new Date().toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'long' }))
+  const [hoyLabel] = useState(() => new Date().toLocaleDateString('es-CL', { weekday: 'short', day: 'numeric', month: 'short' }).replace(/\./g, ''))
 
   const irAGasto = (vehiculoId: Id<'vehiculos'>, arriendoId: Id<'arriendos'>) => {
     setGastoPreset({ vehiculoId, arriendoId, key: Date.now() })
@@ -42,25 +43,39 @@ function Main() {
     window.scrollTo({ top: 0 })
   }
 
+  const cambiarTab = (t: Tab) => {
+    setTab(t)
+    window.scrollTo({ top: 0 })
+  }
+
   return (
     <ToastProvider>
-      <div className="wrap">
-        <div className="topbar">
-          <div className="topbar-title">Loki Rent a Car · Gastos</div>
-          <div className="topbar-right">
-            <div className="topbar-date">{hoyLabel}</div>
-            <button className="btn btn-sm" onClick={salir} title="Cerrar sesión">
-              Salir
-            </button>
-          </div>
+      <ConfirmProvider>
+        <div className="wrap">
+          <header className="topbar">
+            <div className="topbar-title">
+              <img src="/icon.svg" alt="" width={24} height={24} className="topbar-logo" />
+              <span>Loki Gastos</span>
+            </div>
+            <div className="topbar-right">
+              <span className="topbar-date">{hoyLabel}</span>
+              <button type="button" className="icon-btn" onClick={salir} aria-label="Cerrar sesión" title="Cerrar sesión">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
+                </svg>
+              </button>
+            </div>
+          </header>
+          <Nav tab={tab} onChange={cambiarTab} />
+          <main>
+            {tab === 'resumen' && <Resumen />}
+            {tab === 'arriendos' && <Arriendos onAgregarGasto={irAGasto} />}
+            {tab === 'gastos' && <Gastos preset={gastoPreset} />}
+            {tab === 'vehiculos' && <Vehiculos />}
+            {tab === 'duenos' && <Duenos />}
+          </main>
         </div>
-        <Nav tab={tab} onChange={setTab} />
-        {tab === 'resumen' && <Resumen />}
-        {tab === 'arriendos' && <Arriendos onAgregarGasto={irAGasto} />}
-        {tab === 'gastos' && <Gastos preset={gastoPreset} />}
-        {tab === 'vehiculos' && <Vehiculos />}
-        {tab === 'duenos' && <Duenos />}
-      </div>
+      </ConfirmProvider>
     </ToastProvider>
   )
 }

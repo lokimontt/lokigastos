@@ -1,17 +1,33 @@
 import type { ReactNode } from 'react'
 import { catInfo } from '../lib/categorias'
 
-export function Loading({ text = 'Cargando…' }: { text?: string }) {
-  return <div className="loading">{text}</div>
-}
-
-export function Empty({ children }: { children: ReactNode }) {
-  return <div className="empty">{children}</div>
-}
-
-export function Card({ title, right, children }: { title?: ReactNode; right?: ReactNode; children: ReactNode }) {
+/** Skeleton discreto para listas (o texto "Cargando…"). */
+export function Loading({ text = 'Cargando…', rows = 3 }: { text?: string; rows?: number }) {
   return (
-    <div className="card">
+    <div className="loading" role="status" aria-live="polite" aria-label={text}>
+      {Array.from({ length: rows }).map((_, i) => (
+        <div className="skeleton" key={i} aria-hidden="true" />
+      ))}
+      <span className="visually-hidden">{text}</span>
+    </div>
+  )
+}
+
+export function Empty({ icon = '📭', children, hint }: { icon?: string; children: ReactNode; hint?: ReactNode }) {
+  return (
+    <div className="empty">
+      <div className="empty-icon" aria-hidden="true">
+        {icon}
+      </div>
+      <div className="empty-text">{children}</div>
+      {hint && <div className="empty-hint">{hint}</div>}
+    </div>
+  )
+}
+
+export function Card({ title, right, children, className }: { title?: ReactNode; right?: ReactNode; children: ReactNode; className?: string }) {
+  return (
+    <section className={'card' + (className ? ' ' + className : '')}>
       {title && (
         <div className="section-title">
           <span>{title}</span>
@@ -19,12 +35,12 @@ export function Card({ title, right, children }: { title?: ReactNode; right?: Re
         </div>
       )}
       {children}
-    </div>
+    </section>
   )
 }
 
-export function Patente({ p }: { p: string }) {
-  return <span className="badge badge-blue">{p || '—'}</span>
+export function Patente({ p, lg }: { p: string; lg?: boolean }) {
+  return <span className={'badge badge-blue patente' + (lg ? ' patente-lg' : '')}>{p || '—'}</span>
 }
 
 export function CatBadge({ c }: { c: string }) {
@@ -38,4 +54,13 @@ export function PagadoBadge({ pagado }: { pagado: boolean }) {
 
 export function TableWrap({ children }: { children: ReactNode }) {
   return <div className="table-wrap">{children}</div>
+}
+
+/** Botón de ícono accesible (aria-label obligatorio). */
+export function IconButton({ label, onClick, children, className }: { label: string; onClick: () => void; children: ReactNode; className?: string }) {
+  return (
+    <button type="button" className={'icon-btn' + (className ? ' ' + className : '')} onClick={onClick} aria-label={label} title={label}>
+      {children}
+    </button>
+  )
 }
